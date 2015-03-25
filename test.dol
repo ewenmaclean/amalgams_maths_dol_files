@@ -1,0 +1,24 @@
+logic CASL
+
+spec Test1 = 
+  sort S1
+  op h:S1 
+  forall x:S1.
+    h = x %implied
+end
+
+spec Test2[sort Elem] = 
+  sort S2[Elem]
+end
+  
+spec Gen[sort Elem] =
+  sort S3[Elem]
+end 
+
+view I1: Gen[sort Elem] to Test1 = 
+   S3[Elem] |-> S1
+
+view I2: Gen[sort Elem] to Test2[sort Elem] = 
+   S3[Elem] |-> S2[Elem]
+
+spec Colimit = combine Gen,I1,I2

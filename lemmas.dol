@@ -1,0 +1,70 @@
+logic CASL
+
+spec NatSuc = 
+   sort Nat
+   ops zero:Nat
+       s: Nat * Nat -> Nat
+   op fact: Nat -> Nat
+   op qfact: Nat * Nat -> Nat
+   op __ + __: Nat * Nat -> Nat
+   op __ times __: Nat * Nat -> Nat
+   forall x,y:Nat
+      . fact(zero) = s(zero,zero)
+      . fact(s(x,x)) = s(x,x) times fact(x)
+      . qfact(s(x,x),y) = qfact(x,s(x,x) times y)
+      . qfact(zero,x) = x 
+      . fact(x) = qfact(x,zero)
+      . fact(x) times y = qfact(x,y)
+      . zero + x = x
+      . s(x,x) + y = s(x+y,x+y)
+      . zero times y = y
+      . s(x,x) times y = y + (x times y)
+end
+
+spec List = 
+  sort El,L
+  op nil:L
+     cons: El * L -> L
+     app: L * L -> L
+     rev: L -> L
+     qrev: L * L -> L
+     forall x,y: L; h:El
+       . app(nil,x) = x
+       . app(cons(h,x),y) = cons(h,app(x,y))
+       . rev(nil) = nil
+       . rev(cons(h,x)) = app(rev(x),cons(h,nil))
+       . qrev(nil,x) = x
+       . qrev(cons(h,x),y) = qrev(x,cons(h,y))
+end
+
+spec Gen =
+  sorts H,G
+  op null:G
+  op constructor: H * G -> G
+  op recfunc: G -> G
+  op qrecfunc: G * G -> G
+  op auxfunc: G * G -> G
+end
+
+view I1: Gen to NatSuc = 
+   H |-> Nat,
+   G |-> Nat,
+   null |-> zero,
+   constructor |-> s,
+   recfunc |-> fact,
+   qrecfunc |-> qfact,
+   auxfunc |-> __ times __
+
+view I2: Gen to List = 
+   H |-> El,
+   G |-> L,
+   null |-> nil,
+   constructor |-> cons,
+   recfunc |-> rev,
+   qrecfunc |-> qrev,
+   auxfunc |-> app
+
+spec colimit = combine I1,I2
+  with auxfunc |-> app,
+       s |-> cons,
+       zero |-> nil

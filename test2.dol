@@ -1,0 +1,110 @@
+logic CASL
+
+spec binop = 
+  sort A
+  op binop: A * A -> A
+end
+
+spec ident = 
+  sort A
+  op binop: A * A -> A
+  op e:A
+  forall x:A
+    . binop(x,e) = x
+end
+
+spec inv = 
+  sort A
+  op binop: A * A -> A
+  op e:A
+  op inv:A -> A
+  forall x:A
+    . binop(x,inv(x)) = e
+end
+
+spec assoc = 
+  sort A 
+  op binop: A * A -> A
+  forall x,y,z:A
+    . binop(x,binop(y,z)) = binop(binop(x,y),z)
+end
+
+spec comm = 
+  sort A
+  op binop: A * A -> A
+  forall x,y:A
+    . binop(x,y) = binop(y,x)
+end
+
+spec func = 
+  sort A
+  op f: A -> A
+  op finv: A -> A
+  forall x: A
+    . f(finv(x)) = x
+end
+
+spec finiteness = 
+  sort A
+  op binop: A*A -> A
+  forall x:A. exists y,z:A
+   . x = binop(y,z)
+end
+
+spec finiteident = 
+  sort A
+  op binop: A*A -> A
+  op e:A
+  forall x:A 
+   . binop(x,e) = x
+   . exists y:A . binop(x,y) = e
+end
+
+
+spec NatSuc = 
+   sort Nat
+   ops zero:Nat
+       s: Nat -> Nat
+       __ + __: Nat * Nat -> Nat
+    forall x,y,z: Nat
+     . s(x) = y /\ s(x) = z => y = z
+     . s(x) = s(y) => x=y
+     . exists a: Nat . s(x) = a
+     . not (s(x) = zero)
+     . s(x) + y = s(x+y)
+     . zero + y = y
+end
+
+
+spec Cyclicity = %%BLEND????%%
+  NatSuc then
+  sort A
+  op generator:A
+  op __ ^ __: A*Nat -> A
+  op e: A
+  op binop: A * A -> A
+  forall x,y,z:A; m:Nat
+    . binop (x, binop(y,z)) = binop(binop(x,y),z)
+    . exists n:Nat. generator ^ n = y 
+    . x ^ zero = e
+    . x ^ s(m) = binop(x,x^m)       
+end
+
+spec Gen = 
+  sort S
+  op binop: S*S -> S
+  op func: S -> S
+  op id:S 
+end
+
+interpretation I1: Gen to inv = 
+  S |-> A,
+  binop |-> binop,
+  func |-> inv
+
+interpretation I2: Gen to NatSuc = 
+  S |-> Nat,
+  binop |-> __ + __,
+  func |-> s
+
+spec colimit = combine I1, I2
