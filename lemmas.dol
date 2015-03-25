@@ -1,33 +1,60 @@
 logic CASL
 
+%%% HERE WITH HAVE A VERSION OF NATURALS WITH FACT AS AN EXAMPLE FUNCTION
+%%% THE SUCCESSOR FUNCTION IS DEFINED WITH DUPLICATE ARGUMENTS
+%%% THIS IS SO THAT THE VIEW TO THE GENERIC SPACE CAN WORK
+%%% SO INSTEAD OF S(X) WE WRITE S(X,X)
 spec NatSuc = 
    sort Nat
+   sort Dummy
+   op dummy: Dummy
    ops zero:Nat
-       s: Nat * Nat -> Nat
+       s: Dummy * Nat -> Nat
    op fact: Nat -> Nat
    op qfact: Nat * Nat -> Nat
    op __ + __: Nat * Nat -> Nat
    op __ times __: Nat * Nat -> Nat
    forall x,y:Nat
-      . fact(zero) = s(zero,zero)
-      . fact(s(x,x)) = s(x,x) times fact(x)
-      . qfact(s(x,x),y) = qfact(x,s(x,x) times y)
+     . exists a: Nat . s(dummy,x) = a
+     . not (s(dummy,x) = zero)      %% remove this in GEN
+      . fact(zero) = s(dummy,zero)  %% remove this in GEN
+      . fact(s(dummy,x)) = s(dummy,x) times fact(x)  %% remove this in GEN
+      . qfact(s(dummy,x),y) = qfact(x,s(dummy,x) times y) %% remove this in GEN
       . qfact(zero,x) = x 
-      . fact(x) = qfact(x,zero)
-      . fact(x) times y = qfact(x,y)
+      . fact(x) = qfact(x,zero)    %implied
+      . fact(x) times y = qfact(x,y)  %lemma required to prove this
       . zero + x = x
-      . s(x,x) + y = s(x+y,x+y)
-      . zero times y = y
-      . s(x,x) times y = y + (x times y)
+      . s(dummy,x) + y = s(dummy,x+y)
+      . zero times y = y  %remove this in gen
+      . s(dummy,x) times y = y + (x times y) %remove this in gen
 end
 
+%%% HERE IS A WEAKENED VERSION WITH SOME AXIOMS REMOVED
+spec GenNatSuc = 
+   sort Nat
+   sort Dummy
+   op dummy: Dummy
+   ops zero:Nat
+       s: Dummy * Nat -> Nat
+   op fact: Nat -> Nat
+   op qfact: Nat * Nat -> Nat
+   op __ + __: Nat * Nat -> Nat
+   op __ times __: Nat * Nat -> Nat
+   forall x,y:Nat    
+      . qfact(zero,x) = x 
+      . fact(x) = qfact(x,zero)    %implied
+      . fact(x) times y = qfact(x,y)  %lemma required to prove this
+      . zero times y = y
+end
+
+
+%%% 
 spec List = 
-  sort El,L
-  op nil:L
-     cons: El * L -> L
-     app: L * L -> L
-     rev: L -> L
-     qrev: L * L -> L
+  sort El
+  free type L ::= nil | cons(El,L)
+     op app: L * L -> L
+     op rev: L -> L
+     op qrev: L * L -> L
      forall x,y: L; h:El
        . app(nil,x) = x
        . app(cons(h,x),y) = cons(h,app(x,y))
@@ -35,7 +62,14 @@ spec List =
        . rev(cons(h,x)) = app(rev(x),cons(h,nil))
        . qrev(nil,x) = x
        . qrev(cons(h,x),y) = qrev(x,cons(h,y))
+       . rev(x) = qrev(x,nil)  %implied
 end
+
+%%% NOW WE CREATE A GENERIC SPACE WITH NULL ELEMENT
+%%% CONSTRUCTOR ELEMENT
+%%% RECURSIVE FUNCTION
+%%% TAIL_RECURSIVE FUNCTION
+%%% AUXILIARY FUNCTION
 
 spec Gen =
   sorts H,G
@@ -47,7 +81,7 @@ spec Gen =
 end
 
 view I1: Gen to NatSuc = 
-   H |-> Nat,
+   H |-> Dummy,
    G |-> Nat,
    null |-> zero,
    constructor |-> s,
@@ -64,7 +98,22 @@ view I2: Gen to List =
    qrecfunc |-> qrev,
    auxfunc |-> app
 
+view I3: Gen to GenNatSuc = 
+   H |-> Dummy,
+   G |-> Nat,
+   null |-> zero,
+   constructor |-> s,
+   recfunc |-> fact,
+   qrecfunc |-> qfact,
+   auxfunc |-> __ times __
+
+%% THIS IS IMMEDIATELY INCONSISTENT
 spec colimit = combine I1,I2
   with auxfunc |-> app,
+       s |-> cons,
+       zero |-> nil
+
+spec colimit_consistent = combine I2, I3 
+   with auxfunc |-> app,
        s |-> cons,
        zero |-> nil
