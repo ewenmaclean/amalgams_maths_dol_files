@@ -12,21 +12,21 @@ spec NatSuc =
        s: Element * Nat -> Nat
    op fact: Nat -> Nat
    op qfact: Nat * Nat -> Nat
-   op __ + __: Nat * Nat -> Nat
-   op __ times __: Nat * Nat -> Nat
+   op plus : Nat * Nat -> Nat
+   op times : Nat * Nat -> Nat
    forall x,y:Nat
      . exists a: Nat . s(canonical_element,x) = a
      . not (s(canonical_element,x) = zero)      %% remove this in GEN
       . fact(zero) = s(canonical_element,zero)  %% remove this in GEN
-      . fact(s(canonical_element,x)) = s(canonical_element,x) times fact(x)  %% remove this in GEN
-      . qfact(s(canonical_element,x),y) = qfact(x,s(canonical_element,x) times y) %% remove this in GEN
+      . fact(s(canonical_element,x)) = times(s(canonical_element,x),fact(x))  %% remove this in GEN
+      . qfact(s(canonical_element,x),y) = times(qfact(x,s(canonical_element,x)),y) %% remove this in GEN
       . qfact(zero,x) = x 
       . fact(x) = qfact(x,zero)    %implied
-      . fact(x) times y = qfact(x,y)  %lemma required to prove this
-      . zero + x = x
-      . s(canonical_element,x) + y = s(canonical_element,x+y)
-      . zero times y = y  %remove this in gen
-      . s(canonical_element,x) times y = y + (x times y) %remove this in gen
+      . times(fact(x),y) = qfact(x,y)  %lemma required to prove this
+      . plus(zero,x) = x
+      . plus(s(canonical_element,x),y) = s(canonical_element,plus(x,y))
+      . times(zero,y) = zero  %remove this in gen
+      . times(s(canonical_element,x),y) = plus(y,times(x,y)) %remove this in gen
 end
 
 %%% HERE IS A WEAKENED VERSION WITH SOME AXIOMS REMOVED
@@ -38,13 +38,13 @@ spec GenNatSuc =
        s: Element * Nat -> Nat
    op fact: Nat -> Nat
    op qfact: Nat * Nat -> Nat
-   op __ + __: Nat * Nat -> Nat
-   op __ times __: Nat * Nat -> Nat
+   op plus: Nat * Nat -> Nat
+   op times : Nat * Nat -> Nat
    forall x,y:Nat    
       . qfact(zero,x) = x 
       . fact(x) = qfact(x,zero)    %implied
-      . fact(x) times y = qfact(x,y)  %lemma required to prove this
-      . zero times y = y
+      . times(fact(x),y) = qfact(x,y)  %lemma required to prove this
+      . times(zero,y) = zero
 end
 
 
@@ -89,7 +89,7 @@ view I1: Gen to NatSuc =
    constructor |-> s,
    recfunc |-> fact,
    qrecfunc |-> qfact,
-   auxfunc |-> __ times __
+   auxfunc |-> times
 
 view I2: Gen to List = 
    H |-> El,
@@ -107,15 +107,15 @@ view I3: Gen to GenNatSuc =
    constructor |-> s,
    recfunc |-> fact,
    qrecfunc |-> qfact,
-   auxfunc |-> __ times __
+   auxfunc |-> times
 
 %% THIS IS IMMEDIATELY INCONSISTENT
 spec colimit = combine I1,I2
-  with auxfunc |-> app,
+  with 
        s |-> cons,
        zero |-> nil
 
 spec colimit_consistent = combine I2, I3 
-   with auxfunc |-> app,
+   with 
        s |-> cons,
        zero |-> nil
