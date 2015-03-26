@@ -6,36 +6,36 @@ logic CASL
 %%% SO INSTEAD OF S(X) WE WRITE S(X,X)
 spec NatSuc = 
    sort Nat
-   sort Dummy
-   op dummy: Dummy
+   sort Element
+   op canonical_element: Element
    ops zero:Nat
-       s: Dummy * Nat -> Nat
+       s: Element * Nat -> Nat
    op fact: Nat -> Nat
    op qfact: Nat * Nat -> Nat
    op __ + __: Nat * Nat -> Nat
    op __ times __: Nat * Nat -> Nat
    forall x,y:Nat
-     . exists a: Nat . s(dummy,x) = a
-     . not (s(dummy,x) = zero)      %% remove this in GEN
-      . fact(zero) = s(dummy,zero)  %% remove this in GEN
-      . fact(s(dummy,x)) = s(dummy,x) times fact(x)  %% remove this in GEN
-      . qfact(s(dummy,x),y) = qfact(x,s(dummy,x) times y) %% remove this in GEN
+     . exists a: Nat . s(canonical_element,x) = a
+     . not (s(canonical_element,x) = zero)      %% remove this in GEN
+      . fact(zero) = s(canonical_element,zero)  %% remove this in GEN
+      . fact(s(canonical_element,x)) = s(canonical_element,x) times fact(x)  %% remove this in GEN
+      . qfact(s(canonical_element,x),y) = qfact(x,s(canonical_element,x) times y) %% remove this in GEN
       . qfact(zero,x) = x 
       . fact(x) = qfact(x,zero)    %implied
       . fact(x) times y = qfact(x,y)  %lemma required to prove this
       . zero + x = x
-      . s(dummy,x) + y = s(dummy,x+y)
+      . s(canonical_element,x) + y = s(canonical_element,x+y)
       . zero times y = y  %remove this in gen
-      . s(dummy,x) times y = y + (x times y) %remove this in gen
+      . s(canonical_element,x) times y = y + (x times y) %remove this in gen
 end
 
 %%% HERE IS A WEAKENED VERSION WITH SOME AXIOMS REMOVED
 spec GenNatSuc = 
    sort Nat
-   sort Dummy
-   op dummy: Dummy
+   sort Element
+   op canonical_element: Element
    ops zero:Nat
-       s: Dummy * Nat -> Nat
+       s: Element * Nat -> Nat
    op fact: Nat -> Nat
    op qfact: Nat * Nat -> Nat
    op __ + __: Nat * Nat -> Nat
@@ -83,7 +83,7 @@ spec Gen =
 end
 
 view I1: Gen to NatSuc = 
-   H |-> Dummy,
+   H |-> Element,
    G |-> Nat,
    null |-> zero,
    constructor |-> s,
@@ -101,7 +101,7 @@ view I2: Gen to List =
    auxfunc |-> app
 
 view I3: Gen to GenNatSuc = 
-   H |-> Dummy,
+   H |-> Element,
    G |-> Nat,
    null |-> zero,
    constructor |-> s,
