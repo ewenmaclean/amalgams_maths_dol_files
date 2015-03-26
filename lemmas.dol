@@ -51,7 +51,9 @@ end
 %%% 
 spec List = 
   sort El
-  free type L ::= nil | cons(El,L)
+  sort L
+     op nil:L 
+     op cons: El*L -> L
      op app: L * L -> L
      op rev: L -> L
      op qrev: L * L -> L
